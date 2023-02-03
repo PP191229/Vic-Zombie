@@ -42,7 +42,8 @@ public class PlayerNetwork : NetworkBehaviour
 
         if(Input.GetKeyDown(KeyCode.Mouse0) && currentAmmo.Value > 0)
         {
-            Shooting(bulletSpawner);
+            //Shooting(bulletSpawner);
+            TestServerRpc();
             currentAmmo.Value--;
         }
         if (Input.GetKeyDown(KeyCode.R))
@@ -67,9 +68,6 @@ public class PlayerNetwork : NetworkBehaviour
 
         moveDirection = transform.forward * verticalInput + transform.right * horizontalInput;
         transform.position += moveDirection * speed * Time.deltaTime;
-        /*
-        playerMovementInput = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
-        transform.position += playerMovementInput * speed * Time.deltaTime;*/
     }
 
     private void MoveCamera()
@@ -88,6 +86,17 @@ public class PlayerNetwork : NetworkBehaviour
     private void Shooting(Transform firepoint)
     {
         var projectileObj = Instantiate(bulletPrefab, firepoint.position, Quaternion.identity);
+        bulletRB = projectileObj.GetComponent<Rigidbody>();
+        bulletRB.isKinematic = false;
+        projectileObj.GetComponent<NetworkObject>().Spawn(true);
+        Vector3 direction = transform.forward * force;
+        bulletRB.AddForce(direction, ForceMode.Impulse);
+    }
+
+    [ServerRpc]
+    private void TestServerRpc()
+    {
+        var projectileObj = Instantiate(bulletPrefab, bulletSpawner.position, Quaternion.identity);
         bulletRB = projectileObj.GetComponent<Rigidbody>();
         bulletRB.isKinematic = false;
         projectileObj.GetComponent<NetworkObject>().Spawn(true);
